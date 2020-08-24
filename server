@@ -1,0 +1,48 @@
+#include <sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
+#include<netdb.h>
+#include <unistd.h>
+#include<stdio.h>
+#include<string.h>
+#include <ctype.h>
+#include<stdlib.h>
+
+int main(){
+int sockfd ;
+  struct sockaddr_in serveraddr;
+
+  sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+  serveraddr.sin_family = AF_INET;
+  serveraddr.sin_port = htons(8080);
+  serveraddr.sin_addr.s_addr = htonl( INADDR_ANY );
+
+  memset(serveraddr.sin_zero, '\0', sizeof(serveraddr.sin_zero));
+  bind(sockfd, (struct sockaddr*) &serveraddr, sizeof(serveraddr));
+  struct sockaddr_in clientaddr ;
+  char buffer[255];
+  socklen_t addr_size = sizeof(clientaddr);
+
+  while(1)
+{
+   recvfrom(sockfd,buffer,255,0,(struct sockaddr*)&clientaddr, &addr_size);
+
+   if(strncmp("bye" ,buffer,3)==0)
+   break;
+
+   printf("\nClient Response : %s",buffer);
+
+  bzero(buffer,255);
+  printf("Message : ");
+  fgets(buffer,255,stdin);
+
+  sendto(sockfd,buffer,strlen(buffer),0,(struct sockaddr*)&clientaddr,addr_size);
+
+  }
+
+
+  close(sockfd);
+  return 0;
+}
